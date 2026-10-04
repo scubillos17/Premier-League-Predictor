@@ -1,0 +1,2 @@
+[console_scripts]
+pl-predictor = premier_league_predictor.__main__:main

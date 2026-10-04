@@ -1,0 +1,71 @@
+Metadata-Version: 2.4
+Name: premier-league-predictor
+Version: 1.0.0
+Summary: Private Windows desktop dashboard for Premier League gameweek forecasts
+License: Private owner-only application
+Requires-Python: <3.14,>=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: PySide6==6.9.2
+Requires-Dist: pyqtgraph==0.13.7
+Requires-Dist: numpy==2.3.2
+Requires-Dist: pandas==2.3.2
+Requires-Dist: scikit-learn==1.7.1
+Requires-Dist: catboost==1.2.8
+Provides-Extra: build
+Requires-Dist: PyInstaller==6.16.0; extra == "build"
+Provides-Extra: test
+Requires-Dist: pytest==8.4.2; extra == "test"
+
+# Premier League Predictor
+
+Private Windows desktop dashboard for expected goals, FPL assists, defensive returns, clean sheets, cards, and player appearances in the immediately upcoming Premier League gameweek.
+
+## Desktop design
+
+The application uses the **Split-view Scout** layout: rankings and the searchable squad table remain on the left while the selected player's detailed projection, form, model drivers, fixture splits, and opponent history remain visible on the right.
+
+Alternative concepts considered:
+
+- **Analytics dashboard:** familiar card layout, but requires more navigation on desktop.
+- **Matchday cards:** more visual, but sacrifices the data density needed for comparison.
+
+## Technology and cost
+
+- Python 3.12, PySide6/Qt Widgets, PyQtGraph, pandas, scikit-learn, CatBoost, and SQLite.
+- All data stays local under `%LOCALAPPDATA%\PremierLeaguePredictor`.
+- Current FPL feeds and pinned community snapshots are the only network sources.
+- No OpenAI API, paid data source, hosted database, domain, or metered service is used.
+
+## Run from source
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[test,build]"
+.\.venv\Scripts\python.exe -m premier_league_predictor
+```
+
+Run a headless refresh with:
+
+```powershell
+.\.venv\Scripts\python.exe -m premier_league_predictor --refresh-only
+```
+
+## Build and install
+
+```powershell
+.\scripts\build.ps1
+.\scripts\install.ps1
+```
+
+The installer copies the one-folder build into the current user's local application directory and creates a non-overlapping Windows Scheduled Task for Monday at 2:00 PM local time. It requires no administrator rights. Use `scripts\uninstall.ps1` to remove the app and task; local prediction data is retained unless `-RemoveData` is supplied.
+
+The executable is intentionally unsigned in v1, so Windows SmartScreen may show an unknown-publisher warning. No code-signing purchase is required.
+
+## Current-player rule
+
+The current FPL `bootstrap-static` response is authoritative. Only players present in that feed, assigned to a current team, and attached to the upcoming gameweek are eligible for predictions or rankings. Historical records for transferred players remain available internally for opponent history, but those players cannot appear as current candidates.
+
+## Failure behavior
+
+Every refresh is validated before it is promoted. A download, schema, model, or database failure leaves the previous completed run untouched and the GUI clearly marks it stale. There is no automatic migration to a paid provider.
+
